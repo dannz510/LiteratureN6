@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sơ đồ tư duy Sông Hương | Dannz Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050810;
+            --primary: #c5a059;
+            --river: #38bdf8;
+            --text: #f1f5f9;
+        }
+        body {
+            background-color: var(--bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            margin: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        .serif { font-family: 'Playfair Display', serif; }
+
+        #river-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #050810 100%);
+            z-index: -1;
+        }
+
+        .river-line {
+            fill: none;
+            stroke: var(--river);
+            stroke-width: 1.5;
+            stroke-dasharray: 8, 4;
+            animation: flow 15s linear infinite;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+        @keyframes flow { to { stroke-dashoffset: -200; } }
+
+        .node { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        
+        .node-circle {
+            fill: rgba(15, 23, 42, 0.9);
+            stroke: var(--primary);
+            stroke-width: 1.5;
+            transition: all 0.3s ease;
+        }
+        
+        /* Hiệu ứng khi active/hover */
+        .node.active .node-circle, .node:hover .node-circle {
+            r: 52;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 15px var(--primary));
+        }
+
+        .main-node-circle { fill: var(--primary); stroke: var(--text); stroke-width: 2; }
+        .label { pointer-events: none; font-size: 11px; fill: var(--text); font-weight: 500; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+        .main-label { font-size: 15px; fill: #000; font-weight: 800; text-transform: uppercase; }
+
+        #tooltip {
+            position: fixed;
+            padding: 1rem;
+            background: rgba(10, 15, 30, 0.98);
+            border: 1.5px solid var(--primary);
+            border-radius: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            max-width: 280px;
+            z-index: 1000;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            transform: translateY(10px);
+        }
+        #tooltip.visible { opacity: 1; transform: translateY(0); }
+
+        .particle { position: absolute; background: white; border-radius: 50%; pointer-events: none; opacity: 0.05; }
+        
+        /* Responsive Title adjustment */
+        .header-container {
+            position: absolute;
+            top: 5vh;
+            width: 100%;
+            pointer-events: none;
+            z-index: 50;
+            padding: 0 20px;
+        }
+
+        svg { width: 100%; height: 100%; }
+    </style>
+</head>
+<body onclick="handleGlobalClick(event)">
+
+    <div id="river-bg"></div>
+    <div id="tooltip"></div>
+
+    <div class="header-container text-center">
+        <h1 class="serif text-3xl md:text-5xl text-[#c5a059] mb-1 md:mb-3 tracking-tighter">Ai Đã Đặt Tên Cho Dòng Sông?</h1>
+        <p class="text-[9px] md:text-xs tracking-[0.3em] uppercase opacity-40 font-light">Kiến trúc tri thức & Cảm thức văn chương</p>
+    </div>
+
+    <svg id="mindmap-svg" viewBox="0 0 1200 1000" preserveAspectRatio="xMidYMid meet">
+        <g id="lines-container"></g>
+        <g id="nodes-container"></g>
+    </svg>
+
+    <div class="fixed bottom-6 left-6 text-left opacity-30 text-[9px] tracking-widest uppercase pointer-events-none">
+        <p>Literary Analytics</p>
+        <p>Dannz Studio (Bùi Anh Đức)</p>
+    </div>
+
+    <script>
+        const data = {
+            name: "HƯƠNG GIANG",
+            desc: "Một thực thể sống có linh hồn, là bản trường ca của lịch sử và cái nôi của văn hóa Huế.",
+            children: [
+                {
+                    name: "THƯỢNG NGUỒN",
+                    desc: "Vẻ đẹp hoang dại, mãnh liệt của rừng già trước khi trở thành người mẹ phù sa.",
+                    color: "#f87171",
+                    children: [
+                        { name: "Trường ca rừng già", desc: "Rầm rộ giữa bóng cây đại ngàn, mãnh liệt qua ghềnh thác, cuộn xoáy như cơn lốc." },
+                        { name: "Cô gái Di-gan", desc: "Phóng khoáng, man dại và đầy bản năng, mang sức sống tự do của núi rừng." },
+                        { name: "Người mẹ phù sa", desc: "Khép mình lại để chuẩn bị cho một hành trình dịu dàng hơn phía hạ lưu." }
+                    ]
+                },
+                {
+                    name: "NGOẠI Ô HUẾ",
+                    desc: "Hành trình tìm kiếm 'người tình mong đợi' với những đường cong duyên dáng.",
+                    color: "#4ade80",
+                    children: [
+                        { name: "Người đẹp ngủ mơ", desc: "Lướt qua cánh đồng Châu Hóa thơm ngát, tựa như nàng tiên chưa thức tỉnh." },
+                        { name: "Sớm xanh trưa vàng", desc: "Sự biến ảo sắc thái huyền ảo, phản quang vẻ đẹp u tịch của lăng tẩm." },
+                        { name: "Cung cung mềm mại", desc: "Uốn mình theo những nếp gấp của địa hình, vẽ nên hình hài mềm mại." }
+                    ]
+                },
+                {
+                    name: "TRONG LÒNG HUẾ",
+                    desc: "Điệu Slow lãng mạn, một sự hội ngộ đầy thủy chung và sâu sắc.",
+                    color: "#60a5fa",
+                    children: [
+                        { name: "Điệu Slow tình cảm", desc: "Dòng chảy lững lờ, ngập ngừng như không muốn rời xa người tình kinh đô." },
+                        { name: "Nỗi vương vấn", desc: "Như tiếng 'vâng' không nói ra của tình yêu, lặng lẽ và sâu thẳm." },
+                        { name: "Ánh hoa đăng", desc: "Sự lung linh kỳ ảo trong đêm hội, soi bóng những giấc mơ Cố đô." }
+                    ]
+                },
+                {
+                    name: "DI SẢN VĂN HÓA",
+                    desc: "Góc độ lịch sử, thi ca và âm nhạc - dòng sông của thời đại.",
+                    color: "#fbbf24",
+                    children: [
+                        { name: "Sông của sử thi", desc: "Chứng nhân lịch sử từ thời vua Hùng đến những năm tháng kháng chiến oanh liệt." },
+                        { name: "Cái nôi âm nhạc", desc: "Nơi sản sinh ra ca Huế và những bản nhạc cung đình trầm mặc." },
+                        { name: "Dòng sông thi ca", desc: "Chưa bao giờ lặp lại mình trong cảm hứng của các văn nghệ sĩ." }
+                    ]
+                }
+            ]
+        };
+
+        const nodesContainer = document.getElementById('nodes-container');
+        const linesContainer = document.getElementById('lines-container');
+        const tooltip = document.getElementById('tooltip');
+        
+        // Căn giữa sơ đồ thấp hơn một chút để tránh tiêu đề
+        const centerX = 600;
+        const centerY = 550; 
+
+        function draw() {
+            // Render Main Node
+            renderNode(centerX, centerY, data.name, data.desc, true, '#c5a059');
+
+            data.children.forEach((child, i) => {
+                const angle = (i * Math.PI / 2) - Math.PI / 4; 
+                const dist = 300;
+                const x = centerX + Math.cos(angle) * dist;
+                const y = centerY + Math.sin(angle) * dist;
+
+                renderLine(centerX, centerY, x, y);
+                renderNode(x, y, child.name, child.desc, false, child.color);
+
+                child.children.forEach((leaf, j) => {
+                    const leafAngle = angle + (j - 1) * 0.45;
+                    const leafDist = 180;
+                    const lx = x + Math.cos(leafAngle) * leafDist;
+                    const ly = y + Math.sin(leafAngle) * leafDist;
+
+                    renderLine(x, y, lx, ly);
+                    renderNode(lx, ly, leaf.name, leaf.desc, false, child.color, 35);
+                });
+            });
+        }
+
+        function renderNode(x, y, label, info, isMain, color, radius = 48) {
+            const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            g.setAttribute("class", "node");
+            g.dataset.info = info;
+            g.dataset.label = label;
+            g.dataset.color = color;
+            
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", x);
+            circle.setAttribute("cy", y);
+            circle.setAttribute("r", isMain ? 70 : radius);
+            circle.setAttribute("class", isMain ? "main-node-circle" : "node-circle");
+            if (!isMain) circle.style.stroke = color;
+
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", x);
+            text.setAttribute("y", y);
+            text.setAttribute("class", isMain ? "serif main-label" : "label");
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("dy", ".35em");
+            
+            if (label.length > 10 && !isMain) {
+                const words = label.split(' ');
+                const mid = Math.ceil(words.length / 2);
+                text.innerHTML = `<tspan x="${x}" dy="-0.3em">${words.slice(0,mid).join(' ')}</tspan>
+                                  <tspan x="${x}" dy="1.2em">${words.slice(mid).join(' ')}</tspan>`;
+            } else {
+                text.textContent = label;
+            }
+
+            g.appendChild(circle);
+            g.appendChild(text);
+
+            // SỰ KIỆN TƯƠNG TÁC
+            const showTooltip = (e) => {
+                e.stopPropagation();
+                
+                // Clear active states
+                document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+                g.classList.add('active');
+
+                // Update content
+                tooltip.innerHTML = `
+                    <h4 class="serif text-lg border-b border-white/20 pb-2 mb-2" style="color:${color}">${label}</h4>
+                    <p class="text-xs leading-relaxed text-gray-300">${info}</p>
+                `;
+                tooltip.classList.add('visible');
+
+                // Position
+                let tx = e.clientX || (e.touches ? e.touches[0].clientX : x);
+                let ty = e.clientY || (e.touches ? e.touches[0].clientY : y);
+
+                // Giữ tooltip trong màn hình
+                const rect = tooltip.getBoundingClientRect();
+                if (tx + rect.width > window.innerWidth) tx -= rect.width;
+                if (ty + rect.height > window.innerHeight) ty -= rect.height;
+
+                tooltip.style.left = tx + 'px';
+                tooltip.style.top = ty + 'px';
+            };
+
+            g.addEventListener('click', showTooltip);
+            g.addEventListener('mouseenter', showTooltip);
+            g.addEventListener('mouseleave', () => {
+                if (!window.matchMedia("(max-width: 768px)").matches) {
+                    tooltip.classList.remove('visible');
+                    g.classList.remove('active');
+                }
+            });
+
+            nodesContainer.appendChild(g);
+        }
+
+        function renderLine(x1, y1, x2, y2) {
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const cp1x = x1 + (x2 - x1) * 0.1;
+            const cp1y = y1 + (y2 - y1) * 0.8;
+            path.setAttribute("d", `M ${x1} ${y1} Q ${cp1x} ${cp1y}, ${x2} ${y2}`);
+            path.setAttribute("class", "river-line");
+            linesContainer.appendChild(path);
+        }
+
+        function handleGlobalClick(e) {
+            if (!e.target.closest('.node')) {
+                tooltip.classList.remove('visible');
+                document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+            }
+        }
+
+        function createParticles() {
+            for(let i=0; i<40; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 2 + 1;
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                p.style.left = Math.random() * 100 + 'vw';
+                p.style.top = Math.random() * 100 + 'vh';
+                document.body.appendChild(p);
+                p.animate([
+                    { transform: 'translate(0, 0)', opacity: 0 },
+                    { transform: `translate(${Math.random()*60-30}px, ${Math.random()*60-30}px)`, opacity: 0.1 },
+                    { transform: `translate(0, 0)`, opacity: 0 }
+                ], { duration: (15 + Math.random() * 20) * 1000, iterations: Infinity });
+            }
+        }
+
+        window.onload = () => {
+            draw();
+            createParticles();
+        };
+    </script>
+</body>
+</html>
