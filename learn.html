@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hương Giang Literary Hub | Dannz Studio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --paper: #f9f7f2;
+            --indigo: #1a2a44;
+            --gold: #c5a059;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--paper);
+            color: var(--indigo);
+        }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        
+        /* Hiệu ứng giấy cũ */
+        .parchment {
+            background-image: url('https://www.transparenttextures.com/patterns/parchment.png');
+        }
+
+        /* Sidebar transition */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* Flashcard 3D flip */
+        .card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .card-flip:hover .card-inner {
+            transform: rotateY(180deg);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Modal animation */
+        .modal-fade {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row overflow-x-hidden">
+    <!-- Texture overlay -->
+    <div class="fixed inset-0 pointer-events-none opacity-[0.03] parchment z-0"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#1a2a44] text-[#f9f7f2] -translate-x-full md:translate-x-0 border-r border-[#c5a059]/30 shadow-2xl flex flex-col">
+        <div class="p-6">
+            <h1 class="text-2xl font-serif font-bold text-[#c5a059] mb-8 italic tracking-tighter">Dannz Literary Hub</h1>
+            <nav class="space-y-4" id="nav-links">
+                <button onclick="showTab('home')" data-tab="home" class="nav-item flex items-center space-x-3 w-full p-3 rounded-lg bg-[#c5a059] text-[#1a2a44] shadow-lg">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="font-medium">Trang chủ</span>
+                </button>
+                <button onclick="showTab('flashcards')" data-tab="flashcards" class="nav-item flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-[#c5a059]/10">
+                    <i data-lucide="layers" class="w-5 h-5"></i>
+                    <span class="font-medium">Thẻ ghi nhớ</span>
+                </button>
+                <button onclick="showTab('quiz')" data-tab="quiz" class="nav-item flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-[#c5a059]/10">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span class="font-medium">Trắc nghiệm</span>
+                </button>
+                <button onclick="showTab('fill')" data-tab="fill" class="nav-item flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-[#c5a059]/10">
+                    <i data-lucide="edit-3" class="w-5 h-5"></i>
+                    <span class="font-medium">Điền từ</span>
+                </button>
+                <button onclick="showTab('contact')" data-tab="contact" class="nav-item flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-[#c5a059]/10">
+                    <i data-lucide="mail" class="w-5 h-5"></i>
+                    <span class="font-medium">Liên hệ</span>
+                </button>
+            </nav>
+        </div>
+        <div class="mt-auto p-6 text-xs opacity-40">
+            © 2025 Bùi Anh Đức | Data Scientist
+        </div>
+    </aside>
+
+    <!-- Mobile Menu Button -->
+    <button onclick="toggleMenu()" class="md:hidden fixed top-4 right-4 z-[60] bg-[#1a2a44] text-[#f9f7f2] p-2 rounded-full shadow-xl">
+        <i data-lucide="menu" id="menu-icon"></i>
+    </button>
+
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-64 p-6 md:p-12 relative z-10">
+        <!-- Header -->
+        <div class="max-w-4xl mx-auto mb-12">
+            <div class="flex justify-between items-end border-b-2 border-[#c5a059]/20 pb-4">
+                <div>
+                    <p class="text-[#c5a059] font-serif italic uppercase tracking-widest text-sm mb-1">Cảm thức văn chương</p>
+                    <h2 id="tab-title" class="text-4xl font-serif font-bold capitalize">Chào mừng Dannz</h2>
+                </div>
+                <div id="score-display" class="hidden bg-[#1a2a44] text-white px-4 py-2 rounded-lg flex items-center space-x-2 animate-bounce">
+                    <i data-lucide="award" class="text-[#c5a059] w-5 h-5"></i>
+                    <span class="font-bold">Điểm: <span id="current-score">0</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-area" class="max-w-4xl mx-auto">
+            <!-- Home Tab -->
+            <div id="tab-home" class="tab-content grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-[#c5a059] relative overflow-hidden group">
+                    <div class="absolute -right-8 -bottom-8 text-[#c5a059]/10 transform group-hover:scale-110 transition-transform">
+                        <i data-lucide="book-open" style="width: 150px; height: 150px;"></i>
+                    </div>
+                    <h3 class="text-2xl font-serif font-bold mb-4">Mục tiêu học tập</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Hệ thống này giúp bạn nắm bắt trọn vẹn vẻ đẹp của sông Hương qua bút ký của Hoàng Phủ Ngọc Tường. Hãy bắt đầu bằng Flashcards và thử thách bản thân với các bài tập.
+                    </p>
+                    <button onclick="showTab('flashcards')" class="bg-[#1a2a44] text-white px-6 py-2 rounded-full flex items-center space-x-2 hover:bg-[#c5a059] transition-colors">
+                        <span>Bắt đầu ngay</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="bg-[#1a2a44] p-8 rounded-2xl shadow-xl text-white">
+                    <h3 class="text-2xl font-serif font-bold mb-4 text-[#c5a059]">Tiến độ của bạn</h3>
+                    <div class="space-y-4">
+                        <div class="w-full bg-white/10 h-2 rounded-full">
+                            <div class="bg-[#c5a059] h-2 rounded-full w-2/3"></div>
+                        </div>
+                        <p class="text-sm opacity-70 italic">"Dòng sông không chỉ chở nước, nó chở cả tâm hồn của một dân tộc."</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flashcards Tab -->
+            <div id="tab-flashcards" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cards will be injected by JS -->
+            </div>
+
+            <!-- Quiz Tab -->
+            <div id="tab-quiz" class="tab-content hidden space-y-8">
+                <div id="quiz-container" class="space-y-8"></div>
+                <div class="flex justify-center pt-8">
+                    <button onclick="submitResult()" class="bg-[#1a2a44] text-[#f9f7f2] px-10 py-4 rounded-full font-bold shadow-lg hover:bg-[#c5a059] transition-all transform hover:-translate-y-1">
+                        Nộp bài & Xem kết quả
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fill in Blank Tab -->
+            <div id="tab-fill" class="tab-content hidden bg-white p-10 rounded-2xl shadow-xl space-y-8">
+                <h3 class="text-xl font-serif italic mb-6">Hãy điền những từ ngữ đắt giá nhất vào ô trống bên dưới:</h3>
+                <div id="fill-container" class="space-y-6"></div>
+                <div class="flex justify-center gap-4 mt-12">
+                    <button onclick="submitResult()" class="bg-[#1a2a44] text-[#f9f7f2] px-10 py-4 rounded-full font-bold shadow-lg hover:bg-[#c5a059] transition-all">Ghi danh</button>
+                    <button onclick="resetAll()" class="border-2 border-[#1a2a44] px-10 py-4 rounded-full font-bold flex items-center space-x-2 hover:bg-[#1a2a44] hover:text-white transition-all">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                        <span>Làm lại</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contact Tab -->
+            <div id="tab-contact" class="tab-content hidden bg-[#1a2a44] text-[#f9f7f2] p-12 rounded-2xl shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-[#c5a059]/20 rounded-full blur-3xl"></div>
+                <h3 class="text-3xl font-serif font-bold mb-6 italic text-[#c5a059]">Gửi lời nhắn cho tác giả</h3>
+                <div class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-xs uppercase opacity-60">Họ và tên</label>
+                            <input type="text" value="Dannz" disabled class="w-full bg-white/5 border border-white/10 p-3 rounded-lg outline-none">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs uppercase opacity-60">Lĩnh vực</label>
+                            <input type="text" value="A.I Engineer & Data Scientist" disabled class="w-full bg-white/5 border border-white/10 p-3 rounded-lg outline-none">
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs uppercase opacity-60">Cảm nhận của bạn</label>
+                        <textarea rows="4" class="w-full bg-white/5 border border-white/10 p-3 rounded-lg focus:outline-none focus:border-[#c5a059]" placeholder="Dòng sông Hương trong tôi là..."></textarea>
+                    </div>
+                    <button class="bg-[#c5a059] text-[#1a2a44] px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform">Gửi đi tâm tình</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Result Modal -->
+    <div id="result-modal" class="fixed inset-0 z-[100] bg-[#1a2a44]/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white p-10 rounded-3xl max-w-md w-full text-center shadow-2xl border-4 border-[#c5a059] modal-fade">
+            <div class="w-24 h-24 bg-[#c5a059]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="award" class="text-[#c5a059]" style="width: 60px; height: 60px;"></i>
+            </div>
+            <h2 class="text-3xl font-serif font-bold mb-2">Hoàn thành thử thách!</h2>
+            <p class="text-gray-500 mb-6">Bạn đã dệt nên những kiến thức thật tinh tế.</p>
+            <div class="text-5xl font-bold text-[#1a2a44] mb-8">
+                <span id="final-score">0</span> <span class="text-lg opacity-40">/ 40</span>
+            </div>
+            <button onclick="closeModal()" class="w-full bg-[#1a2a44] text-white py-4 rounded-xl font-bold hover:bg-[#c5a059] transition-colors">Tiếp tục rèn luyện</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Data ---
+        const flashcards = [
+            { id: 1, q: "Vẻ đẹp Thượng nguồn", a: "Như một bản trường ca của rừng già, mãnh liệt qua ghềnh thác, phóng khoáng như cô gái Di-gan." },
+            { id: 2, q: "Điệu Slow tình cảm", a: "Dòng sông trôi thực chậm khi qua Huế, như nỗi vương vấn kín đáo dành cho cố đô." },
+            { id: 3, q: "Cánh đồng Châu Hóa", a: "Nơi sông Hương hóa thân thành người con gái đẹp nằm ngủ mơ màng giữa hương hoa dại." }
+        ];
+
+        const quizData = [
+            {
+                id: 1,
+                question: "Sông Hương được tác giả so sánh với hình ảnh nào ở thượng nguồn?",
+                options: ["Một dải lụa mềm", "Bản trường ca của rừng già", "Người con gái đẹp nằm ngủ", "Dòng mực biếc"],
+                correct: "Bản trường ca của rừng già"
+            },
+            {
+                id: 2,
+                question: "Ai là tác giả của bút ký 'Ai đã đặt tên cho dòng sông'?",
+                options: ["Nguyễn Tuân", "Tô Hoài", "Hoàng Phủ Ngọc Tường", "Xuân Diệu"],
+                correct: "Hoàng Phủ Ngọc Tường"
+            }
+        ];
+
+        const fillInBlanks = [
+            { text: "Dòng sông Hương khi đi qua lòng thành phố Huế, không còn hối hả mà lặng lẽ như một điệu _______ tình cảm.", answer: "slow" },
+            { text: "Sông Hương lướt qua những cánh đồng _______ thơm ngát.", answer: "châu hóa" }
+        ];
+
+        let userQuizAnswers = {};
+        let userFillAnswers = {};
+
+        // --- Core Logic ---
+        function init() {
+            lucide.createIcons();
+            renderFlashcards();
+            renderQuiz();
+            renderFill();
+        }
+
+        function showTab(tabId) {
+            // Update active link style
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if(item.dataset.tab === tabId) {
+                    item.classList.add('bg-[#c5a059]', 'text-[#1a2a44]', 'shadow-lg');
+                    item.classList.remove('hover:bg-[#c5a059]/10');
+                } else {
+                    item.classList.remove('bg-[#c5a059]', 'text-[#1a2a44]', 'shadow-lg');
+                    item.classList.add('hover:bg-[#c5a059]/10');
+                }
+            });
+
+            // Update title
+            const titles = {
+                home: 'Chào mừng Dannz',
+                flashcards: 'Hành trình Hương Giang',
+                quiz: 'Thử thách trí tuệ',
+                fill: 'Dệt chữ trên giấy',
+                contact: 'Kết nối tâm hồn'
+            };
+            document.getElementById('tab-title').innerText = titles[tabId];
+
+            // Toggle visibility
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            if (window.innerWidth < 768) toggleMenu(false);
+        }
+
+        function toggleMenu(force) {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('menu-icon');
+            const isOpen = typeof force === 'boolean' ? !force : sidebar.classList.contains('translate-x-0');
+            
+            if (isOpen) {
+                sidebar.classList.remove('translate-x-0');
+                sidebar.classList.add('-translate-x-full');
+                icon.setAttribute('data-lucide', 'menu');
+            } else {
+                sidebar.classList.add('translate-x-0');
+                sidebar.classList.remove('-translate-x-full');
+                icon.setAttribute('data-lucide', 'x');
+            }
+            lucide.createIcons();
+        }
+
+        // --- Render Functions ---
+        function renderFlashcards() {
+            const container = document.getElementById('tab-flashcards');
+            container.innerHTML = flashcards.map(card => `
+                <div class="group h-64 [perspective:1000px] card-flip">
+                    <div class="relative h-full w-full rounded-xl shadow-lg card-inner">
+                        <!-- Front -->
+                        <div class="absolute inset-0 flex items-center justify-center p-6 bg-white rounded-xl backface-hidden border border-[#c5a059]/20">
+                            <h4 class="text-xl font-serif font-bold text-center text-[#1a2a44]">${card.q}</h4>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute inset-0 h-full w-full rounded-xl bg-[#1a2a44] px-6 text-center text-[#f9f7f2] rotate-y-180 backface-hidden flex flex-col justify-center items-center">
+                            <p class="italic text-sm leading-relaxed">${card.a}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = quizData.map(q => `
+                <div class="bg-white p-8 rounded-2xl shadow-md border-l-8 border-[#1a2a44]">
+                    <h4 class="text-lg font-bold mb-4">${q.id}. ${q.question}</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${q.options.map(opt => `
+                            <button onclick="selectQuiz(${q.id}, '${opt}')" id="quiz-${q.id}-${opt}" class="quiz-opt-${q.id} p-4 rounded-xl border-2 transition-all text-left border-gray-100 hover:border-[#1a2a44]/20 hover:bg-gray-50">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderFill() {
+            const container = document.getElementById('fill-container');
+            container.innerHTML = fillInBlanks.map((f, idx) => {
+                const parts = f.text.split('_______');
+                return `
+                    <div class="flex flex-col space-y-4">
+                        <p class="text-lg leading-loose">
+                            ${parts[0]}
+                            <input type="text" oninput="userFillAnswers[${idx}] = this.value" class="mx-2 border-b-2 border-[#c5a059] bg-transparent focus:outline-none focus:border-[#1a2a44] text-[#c5a059] font-bold w-40 text-center" placeholder="...">
+                            ${parts[1]}
+                        </p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- Interaction ---
+        function selectQuiz(id, val) {
+            userQuizAnswers[id] = val;
+            document.querySelectorAll(`.quiz-opt-${id}`).forEach(btn => {
+                btn.classList.remove('border-[#c5a059]', 'bg-[#c5a059]/5', 'font-bold');
+                btn.classList.add('border-gray-100');
+            });
+            const selected = document.getElementById(`quiz-${id}-${val}`);
+            selected.classList.add('border-[#c5a059]', 'bg-[#c5a059]/5', 'font-bold');
+            selected.classList.remove('border-gray-100');
+        }
+
+        function submitResult() {
+            let score = 0;
+            quizData.forEach(q => {
+                if (userQuizAnswers[q.id] === q.correct) score += 10;
+            });
+            fillInBlanks.forEach((f, idx) => {
+                if (userFillAnswers[idx]?.toLowerCase().trim() === f.answer) score += 10;
+            });
+
+            document.getElementById('current-score').innerText = score;
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('score-display').classList.remove('hidden');
+            document.getElementById('result-modal').classList.remove('hidden');
+            document.getElementById('result-modal').classList.add('flex');
+        }
+
+        function resetAll() {
+            userQuizAnswers = {};
+            userFillAnswers = {};
+            document.getElementById('score-display').classList.add('hidden');
+            renderQuiz();
+            renderFill();
+        }
+
+        function closeModal() {
+            document.getElementById('result-modal').classList.add('hidden');
+            document.getElementById('result-modal').classList.remove('flex');
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
